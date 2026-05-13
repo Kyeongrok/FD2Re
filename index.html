@@ -23,9 +23,7 @@
       <a href="?page=guide"     data-page="guide">📖 简易攻略</a>
       <a href="?page=changelog" data-page="changelog">📋 更新日志</a>
       <a href="?page=download"  data-page="download">⬇️ 游戏下载</a>
-      <div class="sidebar-section-title">友情链接</div>
-      <a href="https://space.bilibili.com/317819976" target="_blank" rel="noopener">📺 松哥哥的B站账号</a>
-      <a href="https://www.flamedragon.space/p/8-ylbk" target="_blank" rel="noopener">🐉 原版炎龙之家攻略</a>
+      <a href="?page=links"     data-page="links">🔗 友情链接</a>
     </div>
   </nav>
 
@@ -41,7 +39,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-  const pages = { guide: 'content/guide.md', changelog: 'content/changelog.md', download: 'content/download.md' };
+  const renderer = new marked.Renderer();
+  renderer.link = ({ href, title, tokens }) => {
+    const text = tokens.map(t => t.raw).join('');
+    const t = title ? ` title="${title}"` : '';
+    return `<a href="${href}"${t} target="_blank" rel="noopener">${text}</a>`;
+  };
+  marked.use({ renderer });
+</script>
+<script>
+  const pages = { guide: 'content/guide.md', changelog: 'content/changelog.md', download: 'content/download.md', links: 'content/links.md' };
   const defaultPage = 'guide';
 
   const contentEl = document.getElementById('content');
