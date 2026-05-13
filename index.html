@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>炎龙骑士团2 Unity重置版</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <button class="hamburger" id="hamburger" aria-label="菜单">
+    <span></span><span></span><span></span>
+  </button>
+  <span class="site-title">炎龙骑士团2 Unity重置版</span>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-nav">
+      <a href="?page=guide"     data-page="guide">📖 简易攻略</a>
+      <a href="?page=changelog" data-page="changelog">📋 更新日志</a>
+      <a href="?page=download"  data-page="download">⬇️ 游戏下载</a>
+      <div class="sidebar-section-title">友情链接</div>
+      <a href="https://space.bilibili.com/317819976" target="_blank" rel="noopener">📺 松哥哥的B站账号</a>
+      <a href="https://www.flamedragon.space/p/8-ylbk" target="_blank" rel="noopener">🐉 原版炎龙之家攻略</a>
+    </div>
+  </nav>
+
+  <div class="content-area">
+    <div class="disclaimer">
+      本游戏由B站<strong>松哥哥爱咸鱼</strong>开发，属于社区同人作品，严禁任何形式商业使用！！！
+    </div>
+    <div class="content-body" id="content">
+      <p class="status-msg">加载中…</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+  const pages = { guide: 'content/guide.md', changelog: 'content/changelog.md', download: 'content/download.md' };
+  const defaultPage = 'guide';
+
+  const contentEl = document.getElementById('content');
+  const sidebarEl = document.getElementById('sidebar');
+  const overlayEl = document.getElementById('overlay');
+  const hamburgerEl = document.getElementById('hamburger');
+
+  function getPage() {
+    const p = new URLSearchParams(location.search).get('page');
+    return pages[p] ? p : defaultPage;
+  }
+
+  function setActiveLink(page) {
+    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+      a.classList.toggle('active', a.dataset.page === page);
+    });
+  }
+
+  function closeSidebar() {
+    sidebarEl.classList.remove('open');
+    overlayEl.classList.remove('open');
+  }
+
+  async function loadPage(page) {
+    setActiveLink(page);
+    contentEl.innerHTML = '<p class="status-msg">加载中…</p>';
+    try {
+      const res = await fetch(pages[page]);
+      if (!res.ok) throw new Error(res.status);
+      const md = await res.text();
+      contentEl.innerHTML = marked.parse(md);
+      window.scrollTo(0, 0);
+    } catch (e) {
+      contentEl.innerHTML = '<p class="status-msg">内容加载失败，请刷新重试。</p>';
+    }
+  }
+
+  // Intercept sidebar nav clicks for SPA-style navigation
+  document.querySelectorAll('.sidebar-nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const page = a.dataset.page;
+      history.pushState({page}, '', `?page=${page}`);
+      loadPage(page);
+      closeSidebar();
+    });
+  });
+
+  // Browser back/forward
+  window.addEventListener('popstate', () => loadPage(getPage()));
+
+  // Hamburger
+  hamburgerEl.addEventListener('click', () => {
+    sidebarEl.classList.toggle('open');
+    overlayEl.classList.toggle('open');
+  });
+  overlayEl.addEventListener('click', closeSidebar);
+
+  // Initial load
+  loadPage(getPage());
+</script>
+</body>
+</html>
